@@ -1,0 +1,38 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+```{r}
+library(psych)
+library(readr)
+#groundhog.library("psych", "2022-12-01")
+```
+load survey
+```{r}
+survey1<-read_csv("~/Documents/GitHub/Scoring-Surveys/Learning_To_Code_Surveys.csv", col_names = T, col_types = cols(.default = col_integer()))
+```
+Clean data
+```{r}
+survey<-survey1[-c(1:2),c(19:50)]#pull out relevent info
+survey<-survey[-c(3),]#get rid of unanswered submission
+survey$subID<- seq(1:nrow(survey))#create IDS (last column)
+survey<-survey[c(ncol(survey),1:(ncol(survey)-1))]#put sub number in front
+```
+Score survey
+```{r}
+#make list key: it tells which items belong to which category
+#you can score multiple surveys in one, just ...,"RSE10"), NextSurvey = c("Item1", "Item2"....))
+#if the item is reverse scored put a negative in front of the item label
+keys.list <- list(RSE=c("RSE1","-RSE2","RSE3","RSE4","-RSE5","-RSE6","RSE7","-RSE8","-RSE9","RSE10")) 
+keys <- make.keys(survey,keys.list)
+#totals refers to whether you want to sum (true) or average (false)
+#delete refers to whether you want to delete items with no variance
+#min and max set the maximum score and minimum score from subjects
+scores <- scoreItems(keys, totals = FALSE, survey, delete = FALSE, min=0,max=4)
+#within scores there are a variety of features that you can obtain, just type scores$ to see the list
+scores$scores
+scores$alpha
+summary(scores)
+survey$scoresRSE <- scores$scores #add scores to our spreadsheet
+```
+
